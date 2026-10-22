@@ -62,3 +62,4 @@ export const Navbar: Component = () => {
     </nav>
   );
 };
+

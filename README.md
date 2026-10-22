@@ -89,3 +89,4 @@ Accede al frontend de desarrollo en [http://localhost:5173](http://localhost:517
 - Las contraseñas se almacenan cifradas con **Argon2id**.
 - Las rutas protegidas requieren cabecera `Authorization: Bearer <token>`.
 - Control de acceso basado en roles: `administrador`, `profesor`, `alumno` y `tecnico`.
+
