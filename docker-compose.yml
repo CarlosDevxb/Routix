@@ -1,0 +1,70 @@
+services:
+  # ------------------------------------------------------
+  # 1. Base de Datos: PostgreSQL
+  # ------------------------------------------------------
+  db:
+    image: postgres:16-alpine
+    container_name: routix_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ositoBimbo}
+      POSTGRES_DB: ${POSTGRES_DB:-routix_db}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./routix_backend/migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-routix_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - routix_network
+
+  # ------------------------------------------------------
+  # 2. Backend: Rust (Axum + SQLx + Tokio)
+  # ------------------------------------------------------
+  backend:
+    build:
+      context: ./routix_backend
+      dockerfile: Dockerfile
+    container_name: routix_backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-ositoBimbo}@db:5432/${POSTGRES_DB:-routix_db}
+      JWT_SECRET: ${JWT_SECRET:-routix_super_secret_jwt_key_development_2026_xyz}
+      PORT: 3000
+      RUST_LOG: "routix_backend=debug,tower_http=debug,axum=info"
+    ports:
+      - "${BACKEND_PORT:-3000}:3000"
+    networks:
+      - routix_network
+
+  # ------------------------------------------------------
+  # 3. Frontend: SolidJS + Vite + Nginx
+  # ------------------------------------------------------
+  frontend:
+    build:
+      context: ./routix_frontend
+      dockerfile: Dockerfile
+    container_name: routix_frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "${FRONTEND_PORT:-5173}:80"
+    networks:
+      - routix_network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  routix_network:
+    driver: bridge

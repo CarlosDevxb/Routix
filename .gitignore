@@ -1,0 +1,27 @@
+# Environment variables & secrets
+.env
+.env.*
+!.env.example
+
+# Rust backend build artifacts
+routix_backend/target/
+**/target/
+
+# Frontend Node modules and dist build
+routix_frontend/node_modules/
+routix_frontend/dist/
+routix_frontend/.solid/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Docker local data
+postgres_data/
+
+# System and editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
